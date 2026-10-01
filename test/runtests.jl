@@ -85,3 +85,5 @@ end
 
     @test_throws "neither" open_optical(Dict("properties" => Dict()))
 end
+
+include("raster.jl")
