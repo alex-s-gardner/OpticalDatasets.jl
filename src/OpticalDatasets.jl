@@ -20,19 +20,29 @@ A Landsat product id and a Sentinel-2 product name are parsed directly by
 [`landsat_identification`](@ref) and [`sentinel2_identification`](@ref), for a caller who already has
 the id string and does not need `open_optical`'s STAC-shaped dispatch.
 
-This package reads identity only. Converting one into
+Given a path instead of a STAC item, [`open_optical`](@ref) returns an [`OpticalRaster`](@ref): one
+band of the imagery, read lazily a chunk at a time and safe to read from several tasks at once. GDAL
+does the decoding and the transport, so a local file, a `/vsis3/` object and a `/vsicurl/` URL are all
+openable; [`read_window`](@ref) fetches a window through several concurrent requests, which is what
+makes a remote scene read at the link's speed rather than its latency.
+
+Converting an `Identification` into
 [`AutoRIFT.ImagePairInfo`](https://github.com/alex-s-gardner/AutoRIFT.jl) belongs to that package,
 the same way `SLCDatasets.Identification` is consumed there — see `ItsLiveAutoRIFT`'s docstring.
 """
 module OpticalDatasets
 
 using Dates: Dates, DateTime, @dateformat_str
+import ArchGDAL
+import DiskArrays
 
 include("types.jl")
 include("landsat.jl")
 include("sentinel2.jl")
+include("raster.jl")
 
-export Identification, open_optical, landsat_identification, sentinel2_identification
+export Identification, open_optical, landsat_identification, sentinel2_identification,
+       OpticalRaster, read_window, read_window!
 
 # ISO-8601 as STAC's `datetime` property gives it: a trailing `Z`, and a fractional-seconds field that
 # may hold more digits than `DateTime`'s millisecond precision can carry — truncated, not rounded,
