@@ -26,9 +26,9 @@ does the decoding and the transport, so a local file, a `/vsis3/` object and a `
 openable; [`read_window`](@ref) fetches a window through several concurrent requests, which is what
 makes a remote scene read at the link's speed rather than its latency.
 
-Converting an `Identification` into
-[`AutoRIFT.ImagePairInfo`](https://github.com/alex-s-gardner/AutoRIFT.jl) belongs to that package,
-the same way `SLCDatasets.Identification` is consumed there — see `ItsLiveAutoRIFT`'s docstring.
+Converting an `Identification` into an `ImagePairInfo` belongs to
+[`ItsLiveOffsetProduction.jl`](https://github.com/alex-s-gardner/ItsLiveOffsetProduction.jl), which
+owns ITS_LIVE product packaging — the same way `SLCDatasets.Identification` is consumed there.
 """
 module OpticalDatasets
 
