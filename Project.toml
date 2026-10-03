@@ -1,6 +1,6 @@
 name = "OpticalDatasets"
 uuid = "a0fc030c-aaa4-4e24-9fdc-1cbe49ce0bda"
-version = "0.1.0-DEV"
+version = "0.1.0"
 authors = ["Alex S. Gardner, JPL/NASA"]
 
 [deps]
