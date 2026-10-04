@@ -38,11 +38,12 @@ import DiskArrays
 
 include("types.jl")
 include("landsat.jl")
+include("ephemeris.jl")
 include("sentinel2.jl")
 include("raster.jl")
 
 export Identification, open_optical, landsat_identification, sentinel2_identification,
-       OpticalRaster, read_window, read_window!
+       OpticalRaster, read_window, read_window!, landsat_ephemeris, landsat_ephemeris_path
 
 # ISO-8601 as STAC's `datetime` property gives it: a trailing `Z`, and a fractional-seconds field that
 # may hold more digits than `DateTime`'s millisecond precision can carry — truncated, not rounded,

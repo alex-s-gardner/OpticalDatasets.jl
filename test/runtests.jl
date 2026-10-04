@@ -86,4 +86,40 @@ end
     @test_throws "neither" open_optical(Dict("properties" => Dict()))
 end
 
+@testset "landsat_ephemeris" begin
+    # A trimmed `GROUP = EPHEMERIS` block, numerically arbitrary but shaped exactly as
+    # `LT05_L1TP_060018_19851028_20200918_02_T1_ANG.txt` has it: multi-line parenthesised lists,
+    # right-aligned signs, trailing commas.
+    ang = """
+    GROUP = EPHEMERIS
+      NUMBER_OF_POINTS = 4
+      EPHEMERIS_TIME = (71229.000000, 71230.000000, 71231.000000, 71232.000000)
+      EPHEMERIS_ECEF_X = (-2513196.897534, -2519426.030063, -2525652.713622,
+                          -2531876.940641)
+      EPHEMERIS_ECEF_Y = (-2372802.906597, -2375332.419337, -2377858.370416,
+                          -2380380.757279)
+      EPHEMERIS_ECEF_Z = ( 6171754.112625,  6168246.529668,  6164732.011328,
+                            6161210.561472)
+    END_GROUP = EPHEMERIS
+    """
+    mktempdir() do dir
+        path = joinpath(dir, "LT05_L1TP_060018_19851028_20200918_02_T1_ANG.txt")
+        write(path, ang)
+        e = landsat_ephemeris(path)
+        @test e.time == [71229.0, 71230.0, 71231.0, 71232.0]
+        @test length(e.x) == length(e.y) == length(e.z) == 4
+        @test e.x[1] == -2513196.897534
+        @test e.z[end] == 6161210.561472
+
+        bad = joinpath(dir, "LT05_L1TP_060018_19851028_20200918_02_T1_ANG_bad.txt")
+        write(bad, "GROUP = EPHEMERIS\n  NUMBER_OF_POINTS = 4\nEND_GROUP = EPHEMERIS\n")
+        @test_throws "has no EPHEMERIS_TIME" landsat_ephemeris(bad)
+    end
+
+    band = "LT05_L1TP_060018_19851028_20200918_02_T1_B1.TIF"
+    @test landsat_ephemeris_path(band) == "LT05_L1TP_060018_19851028_20200918_02_T1_ANG.txt"
+    @test landsat_ephemeris_path("/vsis3/bucket/" * band) ==
+          "/vsis3/bucket/LT05_L1TP_060018_19851028_20200918_02_T1_ANG.txt"
+end
+
 include("raster.jl")
