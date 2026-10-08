@@ -1,21 +1,35 @@
 name = "OpticalDatasets"
 uuid = "a0fc030c-aaa4-4e24-9fdc-1cbe49ce0bda"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Alex S. Gardner, JPL/NASA"]
 
 [deps]
-ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
+ChunkManifests = "558bc7c3-2be7-4981-9bcf-ba6cea128854"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DiskArrays = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
+OpenJpeg_jll = "643b3616-a352-519d-856d-80112ee9badc"
+TiffImages = "731e570b-9d59-4bfa-96dc-6df516fadf69"
+Zarr = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
 
 [compat]
 ArchGDAL = "0.10"
+ChunkManifests = "0.1"
 Dates = "1"
 DiskArrays = "0.4"
-julia = "1.10"
+OpenJpeg_jll = "2.4, 2.5"
+TiffImages = "0.11"
+Zarr = "0.10"
+# 1.11, not the LTS: ChunkManifests and the Zarr.jl branch it needs are not registered, so they resolve
+# only through `[sources]`, which Pkg ignores before 1.11.
+julia = "1.11"
+
+[sources]
+ChunkManifests = {rev = "slc-optical-drivers", url = "https://github.com/alex-s-gardner/ChunkManifests.jl"}
+Zarr = {rev = "complex-int-dtype", url = "https://github.com/alex-s-gardner/Zarr.jl"}
 
 [extras]
+ArchGDAL = "c9ce4bd3-c3d5-55b8-8973-c0e20141b8c3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["ArchGDAL", "Test"]
