@@ -29,8 +29,17 @@ function sentinel2_identification(id::AbstractString)
         "Sentinel-2 product name's second field must be `MSI` followed by the correction level: $id"))
     sensor, correction_level = sensor_correction[1:3], sensor_correction[4:end]
 
-    acquisition_time = DateTime(acqtime, dateformat"yyyymmdd\THHMMSS")
+    acquisition_time = _sensing_time(acqtime, id)
 
     return Identification(String(name), "S", satellite, sensor, correction_level, acquisition_time,
                           nothing, nothing, nothing, nothing, nothing)
+end
+
+# `YYYYMMDDTHHMMSS`, field by field: a `DateFormat` parse builds its error messages at run time, which
+# `juliac --trim` cannot compile.
+function _sensing_time(s::AbstractString, id::AbstractString)
+    (length(s) == 15 && s[9] == 'T' && all(isdigit, s[1:8]) && all(isdigit, s[10:15])) || throw(ArgumentError(
+        "Sentinel-2 product name's third field must be the sensing time YYYYMMDDTHHMMSS: " * String(id)))
+    return DateTime(parse(Int, s[1:4]), parse(Int, s[5:6]), parse(Int, s[7:8]), parse(Int, s[10:11]),
+                    parse(Int, s[12:13]), parse(Int, s[14:15]))
 end

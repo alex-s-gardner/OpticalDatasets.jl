@@ -24,6 +24,11 @@ function _parse_landsat_id(id::AbstractString)
             processing_date = procdate, acquisition_date = acqdate)
 end
 
+# `Dates.format(t, dateformat"yyyymmdd")`, field by field: `Dates.format` pads through `textwidth`, which
+# `juliac --trim` cannot compile.
+_yyyymmdd(t::DateTime) =
+    string(Dates.year(t); pad = 4) * string(Dates.month(t); pad = 2) * string(Dates.day(t); pad = 2)
+
 """
     landsat_identification(id, acquisition_time::DateTime) -> Identification
 
@@ -34,9 +39,9 @@ not silently resolved by preferring one.
 """
 function landsat_identification(id::AbstractString, acquisition_time::DateTime)
     p = _parse_landsat_id(id)
-    Dates.format(acquisition_time, dateformat"yyyymmdd") == p.acquisition_date || throw(ArgumentError(
-        "`id` names acquisition date $(p.acquisition_date) but `acquisition_time` is " *
-        "$acquisition_time; they must describe the same acquisition"))
+    _yyyymmdd(acquisition_time) == p.acquisition_date || throw(ArgumentError(
+        "`id` names acquisition date $(p.acquisition_date) but `acquisition_time` is on " *
+        _yyyymmdd(acquisition_time) * "; they must describe the same acquisition"))
     return Identification(String(id), p.mission, p.satellite, p.sensor, p.correction_level,
                           acquisition_time, p.path, p.row, p.collection_number,
                           p.collection_category, p.processing_date)

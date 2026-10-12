@@ -32,12 +32,11 @@ owns ITS_LIVE product packaging — the same way `SLCDatasets.Identification` is
 """
 module OpticalDatasets
 
-using ChunkManifests: scan
+import ChunkManifests
 using Dates: Dates, DateTime, @dateformat_str
 import DiskArrays
-# Loaded for the ChunkManifests.jl extensions that scan a GeoTIFF and decode a JPEG 2000 tile.
+# Loaded for the ChunkManifests.jl extension that decodes a JPEG 2000 tile.
 import OpenJpeg_jll
-import TiffImages
 import Zarr
 
 include("types.jl")

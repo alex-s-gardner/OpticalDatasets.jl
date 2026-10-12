@@ -8,7 +8,6 @@ ChunkManifests = "558bc7c3-2be7-4981-9bcf-ba6cea128854"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DiskArrays = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
 OpenJpeg_jll = "643b3616-a352-519d-856d-80112ee9badc"
-TiffImages = "731e570b-9d59-4bfa-96dc-6df516fadf69"
 Zarr = "0a941bbe-ad1d-11e8-39d9-ab76183a1d99"
 
 [compat]
@@ -17,14 +16,13 @@ ChunkManifests = "0.1"
 Dates = "1"
 DiskArrays = "0.4"
 OpenJpeg_jll = "2.4, 2.5"
-TiffImages = "0.11"
 Zarr = "0.10"
 # 1.11, not the LTS: ChunkManifests and the Zarr.jl branch it needs are not registered, so they resolve
 # only through `[sources]`, which Pkg ignores before 1.11.
 julia = "1.11"
 
 [sources]
-ChunkManifests = {rev = "slc-optical-drivers", url = "https://github.com/alex-s-gardner/ChunkManifests.jl"}
+ChunkManifests = {rev = "main", url = "https://github.com/alex-s-gardner/ChunkManifests.jl"}
 Zarr = {rev = "complex-int-dtype", url = "https://github.com/alex-s-gardner/Zarr.jl"}
 
 [extras]
