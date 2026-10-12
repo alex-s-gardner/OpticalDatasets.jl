@@ -22,9 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Named channels rather than version numbers, so there is nothing to bump when a new
-        # Julia lands.
-        version: ['lts', '1', 'pre']
+        # Named channels where they can be, so there is nothing to bump when a new Julia lands. The
+        # oldest is 1.11 rather than the LTS: ChunkManifests and its Zarr.jl branch resolve only through
+        # `[sources]`, which Pkg ignores before 1.11.
+        version: ['1.11', '1', 'pre']
         os: [ubuntu-latest, macOS-latest, windows-latest]
         exclude:
           # One OS is enough to catch a breaking change on an unreleased Julia; three would

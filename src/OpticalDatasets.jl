@@ -21,10 +21,10 @@ A Landsat product id and a Sentinel-2 product name are parsed directly by
 the id string and does not need `open_optical`'s STAC-shaped dispatch.
 
 Given a path instead of a STAC item, [`open_optical`](@ref) returns an [`OpticalRaster`](@ref): one
-band of the imagery, read lazily a chunk at a time and safe to read from several tasks at once. GDAL
-does the decoding and the transport, so a local file, a `/vsis3/` object and a `/vsicurl/` URL are all
-openable; [`read_window`](@ref) fetches a window through several concurrent requests, which is what
-makes a remote scene read at the link's speed rather than its latency.
+band of the imagery, read lazily a chunk at a time and safe to read from several tasks at once.
+ChunkManifests.jl locates the tiles of a GeoTIFF, COG or JPEG 2000 file and reads them, from a local file,
+an `https://` URL or an `s3://` object; a window's tiles are fetched concurrently and decoded on several
+threads, which is what makes a remote scene read at the link's speed rather than its latency.
 
 Converting an `Identification` into an `ImagePairInfo` belongs to
 [`ItsLiveOffsetProduction.jl`](https://github.com/alex-s-gardner/ItsLiveOffsetProduction.jl), which
@@ -32,9 +32,12 @@ owns ITS_LIVE product packaging — the same way `SLCDatasets.Identification` is
 """
 module OpticalDatasets
 
+import ChunkManifests
 using Dates: Dates, DateTime, @dateformat_str
-import ArchGDAL
 import DiskArrays
+# Loaded for the ChunkManifests.jl extension that decodes a JPEG 2000 tile.
+import OpenJpeg_jll
+import Zarr
 
 include("types.jl")
 include("landsat.jl")
