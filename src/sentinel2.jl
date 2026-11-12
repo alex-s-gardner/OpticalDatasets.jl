@@ -40,6 +40,6 @@ end
 function _sensing_time(s::AbstractString, id::AbstractString)
     (length(s) == 15 && s[9] == 'T' && all(isdigit, s[1:8]) && all(isdigit, s[10:15])) || throw(ArgumentError(
         "Sentinel-2 product name's third field must be the sensing time YYYYMMDDTHHMMSS: " * String(id)))
-    return DateTime(parse(Int, s[1:4]), parse(Int, s[5:6]), parse(Int, s[7:8]), parse(Int, s[10:11]),
-                    parse(Int, s[12:13]), parse(Int, s[14:15]))
+    return NanoDate(DateTime(parse(Int, s[1:4]), parse(Int, s[5:6]), parse(Int, s[7:8]), parse(Int, s[10:11]),
+                             parse(Int, s[12:13]), parse(Int, s[14:15])))
 end

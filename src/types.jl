@@ -1,5 +1,5 @@
 # The scene identity: what a Landsat product ID or a Sentinel-2 product URI already encodes, plus
-# the one acquisition time neither encodes to millisecond precision on its own.
+# the acquisition time to the microsecond.
 #
 # Landsat's ID carries a date but not a time of day; a caller must supply the acquisition instant
 # separately, from the product's own metadata (a STAC item's `datetime`, or an MTL's
@@ -15,8 +15,9 @@ What a Landsat or Sentinel-2 product's own name already says about it.
 `satellite` is the spacecraft number (`"8"`, `"5"`, `"2B"`, ...); `sensor` is the instrument code
 (`"C"`, `"T"`, `"E"` for Landsat's OLI/TIRS, TM, ETM+; `"MSI"` for Sentinel-2).
 
-`path`/`row`/`collection_number`/`collection_category`/`processing_date` are Landsat-only and
-`nothing` for a Sentinel-2 product, which has no such fields.
+`acquisition_time` is a `NanoDates.NanoDate`: a Landsat scene-center time is recorded to the microsecond,
+finer than a `DateTime`. `path`/`row`/`collection_number`/`collection_category`/`processing_date` are
+Landsat-only and `nothing` for a Sentinel-2 product, which has no such fields.
 """
 struct Identification
     id::String
@@ -24,7 +25,7 @@ struct Identification
     satellite::String
     sensor::String
     correction_level::String
-    acquisition_time::DateTime
+    acquisition_time::NanoDate
     path::Union{Int,Nothing}
     row::Union{Int,Nothing}
     collection_number::Union{Int,Nothing}

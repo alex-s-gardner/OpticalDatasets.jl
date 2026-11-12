@@ -26,18 +26,21 @@ end
 
 # `Dates.format(t, dateformat"yyyymmdd")`, field by field: `Dates.format` pads through `textwidth`, which
 # `juliac --trim` cannot compile.
-_yyyymmdd(t::DateTime) =
+_yyyymmdd(t::NanoDate) =
     string(Dates.year(t); pad = 4) * string(Dates.month(t); pad = 2) * string(Dates.day(t); pad = 2)
 
 """
-    landsat_identification(id, acquisition_time::DateTime) -> Identification
+    landsat_identification(id, acquisition_time) -> Identification
 
 `id`'s own fields, plus `acquisition_time` for the one thing a Landsat product ID does not carry: the
 time of day. `id` carries the *date*, and this checks the two agree — a mismatch means `id` and
 `acquisition_time` describe different acquisitions, not that either is malformed on its own, so it is
-not silently resolved by preferring one.
+not silently resolved by preferring one. A `DateTime` is taken as its whole millisecond.
 """
-function landsat_identification(id::AbstractString, acquisition_time::DateTime)
+landsat_identification(id::AbstractString, acquisition_time::DateTime) =
+    landsat_identification(id, NanoDate(acquisition_time))
+
+function landsat_identification(id::AbstractString, acquisition_time::NanoDate)
     p = _parse_landsat_id(id)
     _yyyymmdd(acquisition_time) == p.acquisition_date || throw(ArgumentError(
         "`id` names acquisition date $(p.acquisition_date) but `acquisition_time` is on " *

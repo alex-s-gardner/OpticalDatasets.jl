@@ -8,7 +8,7 @@ using OpticalDatasets, JSON3
 
 item = JSON3.read(read("landsat_item.json", String))
 id = open_optical(item)
-id.mission, id.satellite, id.sensor, id.acquisition_time
+id.mission, id.satellite, id.sensor, id.acquisition_time   # a NanoDates.NanoDate
 ```
 
 [`open_optical`](@ref) takes any `AbstractDict` — the result of parsing a STAC item JSON with whatever
@@ -33,7 +33,8 @@ owns ITS_LIVE product packaging — the same way `SLCDatasets.Identification` is
 module OpticalDatasets
 
 import ChunkManifests
-using Dates: Dates, DateTime, @dateformat_str
+using Dates: Dates, DateTime, Microsecond
+using NanoDates: NanoDate
 import DiskArrays
 # Loaded for the ChunkManifests.jl extension that decodes a JPEG 2000 tile.
 import OpenJpeg_jll
@@ -45,20 +46,32 @@ include("ephemeris.jl")
 include("sentinel2.jl")
 include("raster.jl")
 
-export Identification, open_optical, landsat_identification, sentinel2_identification,
+export Identification, open_optical, landsat_identification, sentinel2_identification, parse_utc,
        OpticalRaster, read_window, read_window!, landsat_ephemeris, landsat_ephemeris_path
 
-# ISO-8601 as STAC's `datetime` property gives it: a trailing `Z`, and a fractional-seconds field that
-# may hold more digits than `DateTime`'s millisecond precision can carry — truncated, not rounded,
-# matching how a Landsat product id's own date field is already millisecond-oblivious.
-function _parse_iso_datetime(s::AbstractString)
-    s = rstrip(s, 'Z')
-    if occursin('.', s)
-        base, frac = split(s, '.'; limit = 2)
-        return DateTime(base * "." * rpad(first(frac, 3), 3, '0'),
-                        dateformat"yyyy-mm-ddTHH:MM:SS.sss")
+"""
+    parse_utc(s) -> NanoDate
+
+A UTC timestamp, `YYYY-MM-DDTHH:MM:SS[.f…][Z]` as a STAC item's `datetime` or a Landsat MTL's
+`DATE_ACQUIRED`/`SCENE_CENTER_TIME` gives it, truncated to the microsecond. Parsed field by field: a
+`DateFormat` parse builds its error messages at run time, which `juliac --trim` cannot compile.
+"""
+function parse_utc(s::AbstractString)
+    t = endswith(s, "Z") ? s[1:(end - 1)] : s
+    date, time = split(t, 'T'; limit = 2)
+    ymd = split(date, '-')
+    hms = split(time, ':')
+    (length(ymd) == 3 && length(hms) == 3) || throw(ArgumentError("not a UTC timestamp: " * String(s)))
+    sec = split(hms[3], '.'; limit = 2)
+    us = 0
+    if length(sec) == 2
+        f = sec[2]
+        all(isdigit, f) || throw(ArgumentError("not a UTC timestamp: " * String(s)))
+        us = length(f) >= 6 ? parse(Int, view(f, 1:6)) : parse(Int, f) * 10^(6 - length(f))
     end
-    return DateTime(s, dateformat"yyyy-mm-ddTHH:MM:SS")
+    whole = DateTime(parse(Int, ymd[1]), parse(Int, ymd[2]), parse(Int, ymd[3]), parse(Int, hms[1]),
+                     parse(Int, hms[2]), parse(Int, sec[1]))
+    return NanoDate(whole) + Microsecond(us)
 end
 
 """
@@ -86,7 +99,7 @@ function open_optical(stac::AbstractDict)
     dt === nothing && throw(ArgumentError(
         "the STAC item has no `properties.datetime`, needed to complete Landsat product id " *
         "`$id`'s acquisition time"))
-    return landsat_identification(id, _parse_iso_datetime(dt))
+    return landsat_identification(id, parse_utc(dt))
 end
 
 end
