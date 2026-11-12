@@ -1,6 +1,7 @@
 using OpticalDatasets
 using OpticalDatasets: Identification
 using Dates
+using NanoDates: NanoDate
 using Test
 
 # Every id below is a real `img_pair_info.id_img1`/`id_img2` captured from the hyp3-autorift
@@ -19,7 +20,7 @@ using Test
     @test id.collection_number == 2
     @test id.collection_category == "T1"
     @test id.processing_date == "20200913"
-    @test id.acquisition_time == DateTime("2020-07-03T15:00:24.531")
+    @test id.acquisition_time == NanoDate(DateTime("2020-07-03T15:00:24.531"))
 
     lt05 = landsat_identification("LT05_L1TP_060018_19851028_20200918_02_T1",
                                   DateTime(1985, 10, 28))
@@ -47,7 +48,7 @@ end
     @test id.satellite == "2B"
     @test id.sensor == "MSI"
     @test id.correction_level == "L1C"
-    @test id.acquisition_time == DateTime(2020, 6, 12, 15, 7, 59)
+    @test id.acquisition_time == NanoDate(DateTime(2020, 6, 12, 15, 7, 59))
     @test id.path === nothing
 
     # With the `.SAFE` suffix a real product directory name carries.
@@ -68,7 +69,12 @@ end
     )
     id = open_optical(landsat_item)
     @test id.mission == "L"
-    @test id.acquisition_time == DateTime(2020, 7, 3, 15, 0, 24, 531)
+    # The STAC item's microseconds, not truncated to the millisecond.
+    @test id.acquisition_time == NanoDate(DateTime(2020, 7, 3, 15, 0, 24, 531)) + Microsecond(814)
+    @test parse_utc("2025-10-28T23:52:01.123456789") ==
+          NanoDate(DateTime(2025, 10, 28, 23, 52, 1, 123)) + Microsecond(456)
+    @test parse_utc("2020-06-26T20:40:21Z") == NanoDate(DateTime(2020, 6, 26, 20, 40, 21))
+    @test_throws "not a UTC timestamp" parse_utc("2020-07-03T15:00:24.5x")
 
     s2_item = Dict(
         "id" => "S2B_22WEB_20200612_0_L1C",   # a provider's own id, deliberately not the SAFE name
@@ -81,7 +87,7 @@ end
     @test sid.mission == "S"
     @test sid.id == "S2B_MSIL1C_20200612T150759_N0209_R025_T22WEB_20200612T184700"
     # The product name's own embedded time, not the STAC item's `datetime` — see `open_optical`.
-    @test sid.acquisition_time == DateTime(2020, 6, 12, 15, 7, 59)
+    @test sid.acquisition_time == NanoDate(DateTime(2020, 6, 12, 15, 7, 59))
 
     @test_throws "neither" open_optical(Dict("properties" => Dict()))
 end
